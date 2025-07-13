@@ -1,66 +1,37 @@
-
-
-
 modLoader="javafml"
-
-
-loaderVersion="${loader_version_range}" #mandatory
+loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
-[[mods]] #mandatory
-
+[[mods]]
 modId="${mod_id}"
-
-
 version="${mod_version}"
-
-
 displayName="${mod_name}"
-
-
-# A URL for the "homepage" for this mod, displayed in the mod UI
-#displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
-
-# A file name (in the root of the mod JAR) containing a logo for display
-#logoFile="examplemod.png" #optional
-
-# A text field displayed in the mod UI
-#credits="" #optional
-
-# A text field displayed in the mod UI
-authors="${mod_authors}" #optional
-
-# The description text for the mod (multi line!) (#mandatory)
+authors="${mod_authors}"
 description='''${mod_description}'''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
-#[[mixins]]
-#config="${mod_id}.mixins.json"
+[[mixins]]
+config="${mod_id}.mixins.json"
 
 # The [[accessTransformers]] block allows you to declare where your AT file is.
 # If this block is omitted, a fallback attempt will be made to load an AT from META-INF/accesstransformer.cfg
 #[[accessTransformers]]
 #file="META-INF/accesstransformer.cfg"
 
-# The coremods config file path is not configurable and is always loaded from META-INF/coremods.json
+# Perhatikan perubahan di baris ini. Placeholder ${mod_id} sudah dihapus.
+# Ganti 'amonite' jika modId Anda berbeda.
+[[dependencies.amonite]]
+modId="neoforge"
+type="required"
+versionRange="[${neo_version},)"
+ordering="NONE"
+side="BOTH"
 
-# A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.${mod_id}]]
-    modId="neoforge"
-    type="required"
-    versionRange="[${neo_version},)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="minecraft"
-    type="required"
-    versionRange="${minecraft_version_range}"
-    ordering="NONE"
-    side="BOTH"
-
-# Features are specific properties of the game environment, that you may want to declare you require. This example declares
-# that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
-# stop your mod loading on the server for example.
-#[features.${mod_id}]
-#openGLVersion="[3.2,)"
+# Perhatikan perubahan di baris ini juga.
+# Ganti 'amonite' jika modId Anda berbeda.
+[[dependencies.amonite]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"

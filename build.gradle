@@ -79,7 +79,7 @@ configurations {
 }
 
 dependencies {
-
+    compileOnly 'org.postgresql:postgresql:42.7.3'
 }
 
 processResources {

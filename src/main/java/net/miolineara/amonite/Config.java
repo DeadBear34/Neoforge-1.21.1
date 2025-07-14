@@ -1,36 +1,44 @@
 package net.miolineara.amonite;
 
-import java.util.List;
-
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-// An example config class. This is not required, but it's a good idea to have one to keep your config organized.
-// Demonstrates how to use Neo's config APIs
 public class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    public static final ModConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER
-            .comment("Whether to log the dirt block on common setup")
-            .define("logDirtBlock", true);
+    // Database Configuration Section
+    public static final ModConfigSpec.ConfigValue<String> DB_HOST;
+    public static final ModConfigSpec.IntValue DB_PORT;
+    public static final ModConfigSpec.ConfigValue<String> DB_NAME;
+    public static final ModConfigSpec.ConfigValue<String> DB_USER;
+    public static final ModConfigSpec.ConfigValue<String> DB_PASSWORD;
 
-    public static final ModConfigSpec.IntValue MAGIC_NUMBER = BUILDER
-            .comment("A magic number")
-            .defineInRange("magicNumber", 42, 0, Integer.MAX_VALUE);
 
-    public static final ModConfigSpec.ConfigValue<String> MAGIC_NUMBER_INTRODUCTION = BUILDER
-            .comment("What you want the introduction message to be for the magic number")
-            .define("magicNumberIntroduction", "The magic number is... ");
+    static {
+        BUILDER.push("database"); // Mengelompokkan semua pengaturan database
 
-    // a list of strings that are treated as resource locations for items
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> ITEM_STRINGS = BUILDER
-            .comment("A list of items to log on common setup.")
-            .defineListAllowEmpty("items", List.of("minecraft:iron_ingot"), () -> "", Config::validateItemName);
+        DB_HOST = BUILDER
+                .comment("Database server host address.")
+                .define("host", "localhost");
+
+        DB_PORT = BUILDER
+                .comment("Database server port.")
+                .defineInRange("port", 5432, 1, 65535);
+
+        DB_NAME = BUILDER
+                .comment("The name of the database to connect to.")
+                .define("databaseName", "minecraft_db");
+
+        DB_USER = BUILDER
+                .comment("The username for the database connection.")
+                .define("user", "postgres");
+
+        DB_PASSWORD = BUILDER
+                .comment("The password for the database connection.")
+                .define("password", "123123", s -> s instanceof String); // Gunakan validasi string sederhana
+
+        BUILDER.pop();
+    }
+
 
     static final ModConfigSpec SPEC = BUILDER.build();
-
-    private static boolean validateItemName(final Object obj) {
-        return obj instanceof String itemName && BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(itemName));
-    }
 }

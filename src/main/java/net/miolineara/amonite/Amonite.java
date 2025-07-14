@@ -1,68 +1,77 @@
 package net.miolineara.amonite;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import org.slf4j.Logger;
-
 import com.mojang.logging.LogUtils;
-
-import net.minecraft.world.item.CreativeModeTabs;
+import net.miolineara.amonite.command.ModCommands;
+import net.miolineara.amonite.database.DatabaseManager;
+import net.miolineara.amonite.database.PlayerDAO;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import org.slf4j.Logger;
 
-// The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Amonite.MOD_ID)
 public class Amonite {
 
     public static final String MOD_ID = "amonite";
-
     public static final Logger LOGGER = LogUtils.getLogger();
-
+    public static final PlayerDAO playerDAO = new PlayerDAO();
 
     public Amonite(IEventBus modEventBus, ModContainer modContainer) {
-
         modEventBus.addListener(this::commonSetup);
-
-
         NeoForge.EVENT_BUS.register(this);
-
-
-        modEventBus.addListener(this::addCreative);
-
-
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-    private void commonSetup(FMLCommonSetupEvent event) {
-
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        // Tidak ada perubahan di sini
     }
-
-
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-
-        }
-    }
-
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-
+        LOGGER.info("Server is starting, initializing database tables...");
+        DatabaseManager.initializeTables();
     }
 
-    @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
-    public static class ClientModEvents{
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
+    // LOGIKA UTAMA ADA DI SINI
+    @SubscribeEvent
+    public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        String uuid = event.getEntity().getUUID().toString();
+        String username = event.getEntity().getName().getString();
 
+        // Hanya jalankan di sisi server
+        if (!event.getEntity().level().isClientSide()) {
+            if (playerDAO.isPlayerRegistered(uuid)) {
+                // Jika pemain sudah ada, update statusnya menjadi online
+                playerDAO.setPlayerOnline(uuid);
+                LOGGER.info("Welcome back, {}!", username);
+            } else {
+                // Jika pemain baru, daftarkan secara otomatis
+                playerDAO.registerNewPlayer(uuid, username);
+            }
         }
+    }
+
+    // Menambahkan event handler untuk saat pemain logout
+    @SubscribeEvent
+    public void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        String uuid = event.getEntity().getUUID().toString();
+        // Hanya jalankan di sisi server
+        if (!event.getEntity().level().isClientSide()) {
+            playerDAO.setPlayerOffline(uuid);
+            LOGGER.info("Player {} has logged out.", event.getEntity().getName().getString());
+        }
+    }
+
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        ModCommands.register(event.getDispatcher());
+        Amonite.LOGGER.info("Perintah Mod Amonite telah didaftarkan.");
     }
 }
